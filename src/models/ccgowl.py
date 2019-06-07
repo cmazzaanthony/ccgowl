@@ -6,10 +6,10 @@ import numpy as np
 from src.models.utils import oscar_weights
 
 
-class CCGOWL(Model):
+class CCGOWLModel(Model):
 
     def __init__(self, x, y, lam1, lam2, max_iters=10, epsilon=1e-05):
-        super(CCGOWL, self).__init__('CCGOWL', x, y)
+        super(CCGOWLModel, self).__init__('CCGOWL', x, y)
         self.nsfunc = OWL()
         self.sfunc = MSE()
         self._lambdas = oscar_weights(lam1, lam2)
