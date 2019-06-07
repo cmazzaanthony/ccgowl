@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.metrics import f1_score
 
 import src.models.grab.GRAB as grab
-from src.data.synthetic_data import generate_theta_star_gowl, standardize
+from src.data.synthetic_data import generate_theta_star_gowl, standardize, generate_synthetic_data
 from src.evaluation.cluster_metrics import spectral_clustering
 from src.evaluation.fit_metrics import error_norm
 from src.models.ccgowl import CCGOWLModel
@@ -104,7 +104,9 @@ class TestCCGOWLvsGRABEstimator(unittest.TestCase):
                                                                                              1)
 
         S = scov_matrices[0]
-        theta_ccgowl = run_ccgowl(X_matrices[0], ccl_1, ccl_2)
+        model = CCGOWLModel(X_matrices[0], ccl_1, ccl_2)
+        model.fit()
+        theta_ccgowl = model.theta_hat
 
         lmbda = .2
         K = 10

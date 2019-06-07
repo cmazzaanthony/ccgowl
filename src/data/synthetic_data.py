@@ -112,3 +112,50 @@ def generate_theta_star_gowl(p,
         thetas_with_noise.append(theta_blocks_with_noise)
 
     return thetas_with_noise, blocks, theta_with_blocks_verbose
+
+
+def generate_blocks(n_blocks, p, min_size, max_size):
+    block_list = list()
+    for i in range(n_blocks):
+        if i % 2 == 0:
+            block_value = round(np.random.uniform(0.7, 1), 2)
+        else:
+            block_value = round(np.random.uniform(-0.7, -1), 2)
+        b = Block(dim=p,
+                  idx=i,
+                  block_min_size=min_size,
+                  block_max_size=max_size,
+                  block_value=block_value)
+
+        block_list.append(b)
+
+    return block_list
+
+
+def generate_synthetic_data(n_blocks,
+                            p,
+                            block_min_size,
+                            block_max_size,
+                            alpha,
+                            noise,
+                            noise_trails=10):
+    blocks = generate_blocks(n_blocks, p, block_min_size, block_max_size)
+    thetas_with_noise, _, theta_blocks = generate_theta_star_gowl(p=p,
+                                                                  alpha=alpha,
+                                                                  noise=noise,
+                                                                  blocks=blocks,
+                                                                  trials=noise_trails)
+
+    scov_matrices = list()
+    X_matrices = list()
+    for theta_noise in thetas_with_noise:
+        sigma = np.linalg.inv(theta_noise)
+        p = sigma.shape[0]
+        n = 100
+        X = np.random.multivariate_normal(np.zeros(p), sigma, n)
+        X = standardize(X)
+        S = np.cov(X.T)
+        scov_matrices.append(S)
+        X_matrices.append(X)
+
+    return thetas_with_noise, theta_blocks, scov_matrices, X_matrices
