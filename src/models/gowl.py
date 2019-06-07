@@ -31,11 +31,12 @@ class GOWLModel(Model):
                  max_iters=10,
                  epsilon=1e-05):
         super(GOWLModel, self).__init__('GOWL', x, None)
+        _, p = sample_cov.shape
         self.S = sample_cov
         self.nsfunc = GOWL()
         self.sfunc = LOGDET()
         self.theta0 = theta0
-        self._lambdas = oscar_weights(lam1, lam2, self.S.shape[0])
+        self._lambdas = oscar_weights(lam1, lam2, (p ** 2 - p) / 2)
         self.dual_gap = dual_gap
         self.max_iters = max_iters
         self.epsilon = epsilon
@@ -103,7 +104,7 @@ class GOWLModel(Model):
                 theta = cov_nearest(theta, method="clipped", threshold=0.1)
 
             if self.ss_type == 'backtracking':
-                t = self._step_size(theta, _lambdas, t)
+                t = self._step_size(theta, S, _lambdas, t)
 
             delta = self._duality_gap(p, theta, S, _lambdas)
 
