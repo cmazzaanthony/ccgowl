@@ -35,7 +35,7 @@ class GOWLModel(Model):
         self.nsfunc = GOWL()
         self.sfunc = LOGDET()
         self.theta0 = theta0
-        self._lambdas = oscar_weights(lam1, lam2)
+        self._lambdas = oscar_weights(lam1, lam2, self.S.shape[0])
         self.dual_gap = dual_gap
         self.max_iters = max_iters
         self.epsilon = epsilon
