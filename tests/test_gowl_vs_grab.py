@@ -3,16 +3,13 @@ import unittest
 import numpy as np
 from sklearn.metrics import f1_score
 
-import grab.GRAB as grab
-from gowl.algorithms.proximal_descent import proximal_descent, pgm_objective
-from gowl.data.real_data import standardize
-from gowl.data.synthetic_data import generate_theta_star_gowl, Block
-from gowl.evaluation.cluster_metrics import spectral_clustering
-from gowl.evaluation.fit_metrics import error_norm
-from gowl.loss.loss_functions import grad_log_det_loss, log_det_loss
-from gowl.prox.prox_owl import prox_graph_owl, oscar_weights, gowl_penalty
-from gowl.simulations.synthetic_results_grid_search import generate_synthetic_data, run_gowl
-from gowl.visualization.graph_visualization import plot_multiple_theta_matrices_2d
+import src.models.grab.GRAB as grab
+from src.data.synthetic_data import generate_theta_star_gowl, standardize, Block
+from src.evaluation.cluster_metrics import spectral_clustering
+from src.evaluation.fit_metrics import error_norm
+from src.models.gowl import GOWLModel
+from src.models.utils import oscar_weights
+from src.visualization.visualize import plot_multiple_theta_matrices_2d
 
 
 def _fit_evaluations(true_theta, theta_hat, clusters, estimator_name):
@@ -50,7 +47,6 @@ class TestGRABEstimator(unittest.TestCase):
         lam1 = 0.001  # controls sparsity
         lam2 = 0.01  # encourages equality of coefficients
         rho = oscar_weights(lam1, lam2, (p ** 2 - p) / 2)
-        print(f'True Theta Objective: {pgm_objective(theta_star, S, rho, log_det_loss, gowl_penalty)}')
 
         lmbda = .2
         K = 10
@@ -71,27 +67,18 @@ class TestGRABEstimator(unittest.TestCase):
         theta_grab = np.asarray(theta_grab)
 
         theta_0 = np.linalg.inv(S)
-        theta_owl = proximal_descent(theta_star,
-                                     theta_0,
-                                     S,
-                                     rho,
-                                     gradf=grad_log_det_loss,
-                                     prox=prox_graph_owl,
-                                     f_func=log_det_loss,
-                                     g_func=gowl_penalty,
-                                     max_iter=100000,
-                                     step_size_type='backtracking',
-                                     use_dual_gap=True,
-                                     verbose=True)
+        model = GOWLModel(X, S, theta_0, lam1, lam2, 'backtracking', max_iters=100000)
+        model.fit()
+        theta_gowl = model.theta_hat
 
-        print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_owl)))
-        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_owl],
+        print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_gowl)))
+        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_gowl],
                                         ['Sample Covariance', f"Blocks: {len(blocks)}", 'True Theta', 'GRAB', 'GOWL'])
 
         _fit_evaluations(theta_star, theta_grab, 1, 'GRAB')
-        _fit_evaluations(theta_star, theta_owl, 1, 'GOWL')
+        _fit_evaluations(theta_star, theta_gowl, 1, 'GOWL')
 
-        y_hat_gowl = spectral_clustering(theta=theta_owl, K=2)
+        y_hat_gowl = spectral_clustering(theta=theta_gowl, K=2)
         y_hat_grab = spectral_clustering(theta=theta_grab, K=2)
         y_true = spectral_clustering(theta=theta_blocks, K=2).flatten()
         _cluster_evaluations(y_true, y_hat_gowl, 'GOWL')
@@ -126,7 +113,6 @@ class TestGRABEstimator(unittest.TestCase):
         lam1 = 0.01  # controls sparsity
         lam2 = 0.01  # encourages equality of coefficients
         rho = oscar_weights(lam1, lam2, (p ** 2 - p) / 2)
-        print(f'True Theta Objective: {pgm_objective(theta_star, S, rho, log_det_loss, gowl_penalty)}')
 
         lmbda = .2
         K = 10
@@ -146,27 +132,18 @@ class TestGRABEstimator(unittest.TestCase):
         theta_grab = np.asarray(theta_grab)
 
         theta_0 = np.linalg.inv(S)
-        theta_owl = proximal_descent(theta_star,
-                                     theta_0,
-                                     S,
-                                     rho,
-                                     gradf=grad_log_det_loss,
-                                     prox=prox_graph_owl,
-                                     f_func=log_det_loss,
-                                     g_func=gowl_penalty,
-                                     max_iter=100000,
-                                     step_size_type='backtracking',
-                                     use_dual_gap=True,
-                                     verbose=True)
+        model = GOWLModel(X, S, theta_0, lam1, lam2, 'backtracking', max_iters=100000)
+        model.fit()
+        theta_gowl = model.theta_hat
 
-        print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_owl)))
-        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_owl],
+        print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_gowl)))
+        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_gowl],
                                         ['Sample Covariance', f"Blocks: {len(blocks)}", 'True Theta', 'GRAB', 'GOWL'])
 
         _fit_evaluations(theta_star, theta_grab, 1, 'GRAB')
-        _fit_evaluations(theta_star, theta_owl, 1, 'GOWL')
+        _fit_evaluations(theta_star, theta_gowl, 1, 'GOWL')
 
-        y_hat_gowl = spectral_clustering(theta=theta_owl, K=3)
+        y_hat_gowl = spectral_clustering(theta=theta_gowl, K=3)
         y_hat_grab = spectral_clustering(theta=theta_grab, K=3)
         y_true = spectral_clustering(theta=theta_blocks, K=3).flatten()
         _cluster_evaluations(y_true, y_hat_gowl, 'GOWL')
@@ -208,18 +185,9 @@ class TestGRABEstimator(unittest.TestCase):
         S = np.cov(X.T)
 
         theta_0 = np.linalg.inv(S)
-        theta_owl = proximal_descent(theta_star,
-                                     theta_0,
-                                     S,
-                                     rho,
-                                     gradf=grad_log_det_loss,
-                                     prox=prox_graph_owl,
-                                     f_func=log_det_loss,
-                                     g_func=gowl_penalty,
-                                     max_iter=100000,
-                                     step_size_type='backtracking',
-                                     use_dual_gap=True,
-                                     verbose=True)
+        model = GOWLModel(X, S, theta_0, lam1, lam2, 'backtracking', max_iters=100000)
+        model.fit()
+        theta_gowl = model.theta_hat
 
         lmbda = .2
         K = 10
@@ -238,14 +206,14 @@ class TestGRABEstimator(unittest.TestCase):
                                       dual_tol=dual_tol)
         theta_grab = np.asarray(theta_grab)
 
-        print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_owl)))
-        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_owl],
+        print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_gowl)))
+        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_gowl],
                                         ['Sample Covariance', f"Blocks: {len(blocks)}", 'True Theta', 'GRAB', 'GOWL'])
 
         _fit_evaluations(theta_star, theta_grab, 4, 'GRAB')
-        _fit_evaluations(theta_star, theta_owl, 4, 'GOWL')
+        _fit_evaluations(theta_star, theta_gowl, 4, 'GOWL')
 
-        y_hat_gowl = spectral_clustering(theta=theta_owl, K=4)
+        y_hat_gowl = spectral_clustering(theta=theta_gowl, K=4)
         y_hat_grab = spectral_clustering(theta=theta_grab, K=4)
         y_true = spectral_clustering(theta=theta_blocks, K=4).flatten()
         _cluster_evaluations(y_true, y_hat_gowl, 'GOWL')

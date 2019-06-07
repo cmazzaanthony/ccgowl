@@ -1,8 +1,8 @@
 import numpy as np
 import heapq
 import copy
-import grab.pway_funcs as fn2
-from grab.quic import QUIC_lmat
+import src.models.grab.pway_funcs as fn2
+from src.models.grab.quic import QUIC_lmat
 from sklearn.cluster import KMeans
 
 

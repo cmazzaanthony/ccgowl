@@ -4,14 +4,6 @@ import numpy as np
 from sklearn.covariance import GraphicalLasso
 from sklearn.metrics import f1_score
 
-# from gowl.algorithms.proximal_descent import proximal_descent, pgm_objective
-# from gowl.data.real_data import standardize
-# from gowl.data.synthetic_data import generate_theta_star_gowl, Block
-# from gowl.evaluation.cluster_metrics import spectral_clustering
-# from gowl.evaluation.fit_metrics import error_norm
-# from gowl.loss.loss_functions import grad_log_det_loss, log_det_loss
-# from gowl.prox.prox_owl import prox_graph_owl, oscar_weights, gowl_penalty
-# from gowl.visualization.graph_visualization import plot_multiple_theta_matrices_2d
 from src.data.synthetic_data import generate_theta_star_gowl, standardize, Block
 from src.evaluation.cluster_metrics import spectral_clustering
 from src.evaluation.fit_metrics import error_norm
@@ -56,8 +48,6 @@ class TestSyntheticData(unittest.TestCase):
         X = np.random.multivariate_normal(np.zeros(p), sigma, n)
         X = standardize(X)
         S = np.cov(X.T)
-
-        # print(f'True Theta Objective: {pgm_objective(theta_star, S, rho, log_det_loss, gowl_penalty)}')
 
         theta_0 = np.linalg.inv(S)
 

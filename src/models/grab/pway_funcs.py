@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn import cluster
-from grab import GRAB
+from src.models.grab import GRAB
 
 
 def my_spectral_clustering(S, K):
