@@ -4,12 +4,6 @@ from sklearn.isotonic import isotonic_regression
 from src.models.functions.function import Function
 
 
-def _get_off_diagonal_entries(x):
-    lt_indices = np.tril_indices_from(x, -1)
-    lt_indices = list(zip(*lt_indices))
-    return lt_indices, np.array([x[i][j] for i, j in lt_indices])
-
-
 class OWL(Function):
 
     def eval(self, beta, weights):
@@ -21,11 +15,6 @@ class OWL(Function):
     def gradient(self, beta, weights):
         raise NotImplementedError("The OWL function is a non-smooth function. \n"
                                   "Please call the prox function.")
-
-    def gowl_penalty(self, x, weights):
-        """ g(X) = sum_{i=1}^p rho_i * |x|_[i] """
-        _, off_diagonal_entries = _get_off_diagonal_entries(x)
-        return self.eval(off_diagonal_entries, weights)
 
     def prox(self, beta, weights):
         """
