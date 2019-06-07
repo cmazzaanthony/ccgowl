@@ -46,7 +46,6 @@ class TestGRABEstimator(unittest.TestCase):
 
         lam1 = 0.001  # controls sparsity
         lam2 = 0.01  # encourages equality of coefficients
-        rho = oscar_weights(lam1, lam2, (p ** 2 - p) / 2)
 
         lmbda = .2
         K = 10
@@ -112,7 +111,6 @@ class TestGRABEstimator(unittest.TestCase):
 
         lam1 = 0.01  # controls sparsity
         lam2 = 0.01  # encourages equality of coefficients
-        rho = oscar_weights(lam1, lam2, (p ** 2 - p) / 2)
 
         lmbda = .2
         K = 10

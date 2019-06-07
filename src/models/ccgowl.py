@@ -8,15 +8,17 @@ from src.models.utils import oscar_weights
 
 class CCGOWLModel(Model):
 
-    def __init__(self, x, y, lam1, lam2, max_iters=10, epsilon=1e-05):
-        super(CCGOWLModel, self).__init__('CCGOWL', x, y)
+    def __init__(self, x, lam1, lam2, max_iters=10, epsilon=1e-05):
+        super(CCGOWLModel, self).__init__('CCGOWL', x, None)
         self.nsfunc = OWL()
         self.sfunc = MSE()
-        self._lambdas = oscar_weights(lam1, lam2)
+        self.n, self.p = x.shape
+        self._lambdas = oscar_weights(lam1, lam2, self.p - 1)
         self.max_iters = max_iters
         self.epsilon = epsilon
         self.beta_0 = np.zeros(x.shape[1] - 1)
         self.beta = np.zeros(x.shape[1] - 1)
+        self.theta_hat = np.zeros((self.p, self.p))
 
     def _backtracking_line_search(self, x, beta, y, weights, max_iter=20, epsilon=2.0):
         mse_val = self.sfunc.eval(x, beta, y)
@@ -52,5 +54,15 @@ class CCGOWLModel(Model):
         return beta
 
     def fit(self):
-        beta = self._proximal_grad_descent(self.X, self.Y, self._lambdas)
-        self.beta = beta
+        column_idxs = np.arange(self.p)
+
+        for j in range(self.p - 1):
+            y_j = self.X[:, j]
+            idx_j = np.delete(column_idxs, j)
+            X_j = self.X[:, idx_j]
+            beta_j = self._proximal_grad_descent(X_j, y_j, self._lambdas)
+
+            sigma_j_sq = ((np.linalg.norm(X_j @ beta_j - y_j)) ** 2) / self.n
+            theta_j = - (1 / sigma_j_sq) * beta_j
+            theta_j = np.insert(theta_j, j, 1.0)  # insert diagonal entry
+            self.theta_hat[:, j] = theta_j

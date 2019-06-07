@@ -3,15 +3,12 @@ import unittest
 import numpy as np
 from sklearn.metrics import f1_score
 
-import grab.GRAB as grab
-from gowl.ccgowl.descent import proximal_grad_descent, mse
-from gowl.data.real_data import standardize
-from gowl.data.synthetic_data import generate_theta_star_gowl
-from gowl.evaluation.cluster_metrics import spectral_clustering
-from gowl.evaluation.fit_metrics import error_norm
-from gowl.prox.prox_owl import oscar_weights
-from gowl.simulations.synthetic_results_grid_search import generate_blocks, generate_synthetic_data, run_ccgowl
-from gowl.visualization.graph_visualization import plot_multiple_theta_matrices_2d
+import src.models.grab.GRAB as grab
+from src.data.synthetic_data import generate_theta_star_gowl, standardize
+from src.evaluation.cluster_metrics import spectral_clustering
+from src.evaluation.fit_metrics import error_norm
+from src.models.ccgowl import CCGOWLModel
+from src.visualization.visualize import plot_multiple_theta_matrices_2d
 
 
 def _fit_evaluations(true_theta, theta_hat, clusters, estimator_name):
@@ -48,25 +45,11 @@ class TestCCGOWLvsGRABEstimator(unittest.TestCase):
 
         lam1 = 0.05263158
         lam2 = 0.05263158
-        beta_0 = np.zeros(p - 1)
-        weights = oscar_weights(lam1, lam2, p - 1)
 
-        column_idxs = np.arange(p)
         theta_owl = np.zeros((p, p))
-        for j in range(p - 1):
-            y_j = X[:, j]
-            idx_j = np.delete(column_idxs, j)
-            X_j = X[:, idx_j]
-            beta_j = proximal_grad_descent(beta_0,
-                                           weights,
-                                           X_j,
-                                           y_j)
-
-            # sigma_j_sq = np.divide(mse(X_j, beta_j, y_j), n)  # sigma is 1 since standardized
-            sigma_j_sq = ((np.linalg.norm(X_j @ beta_j - y_j)) ** 2) / n
-            theta_j = - (1 / sigma_j_sq) * beta_j
-            theta_j = np.insert(theta_j, j, 1.0)  # insert diagonal entry
-            theta_owl[:, j] = theta_j
+        model = CCGOWLModel(X, lam1, lam2)
+        model.fit()
+        theta_ccgowl = model.theta_hat
 
         lmbda = .2
         K = 10
@@ -87,7 +70,7 @@ class TestCCGOWLvsGRABEstimator(unittest.TestCase):
         theta_grab = np.asarray(theta_grab)
 
         print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_owl)))
-        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_owl],
+        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_ccgowl],
                                         ['Sample Covariance', f"Blocks: {len(blocks)}", 'True Theta', 'GRAB', 'CCGOWL'])
 
         _fit_evaluations(theta_star, theta_grab, 1, 'GRAB')
@@ -109,10 +92,8 @@ class TestCCGOWLvsGRABEstimator(unittest.TestCase):
         K = int(p * block_percentage)
         block_min_size = p * 0.1
         block_max_size = p * 0.4
-        # ccl_1 = 0.011 # p = 100
-        # ccl_2 = 0.002 # p = 100
         ccl_1 = 0.1  # p = 50
-        ccl_2 = 0.004 # p = 50
+        ccl_2 = 0.004  # p = 50
 
         thetas_with_noise, theta_blocks, scov_matrices, X_matrices = generate_synthetic_data(K,
                                                                                              p,
@@ -154,4 +135,3 @@ class TestCCGOWLvsGRABEstimator(unittest.TestCase):
         y_true = spectral_clustering(theta=theta_blocks, K=2).flatten()
         _cluster_evaluations(y_true, y_hat_gowl, 'CCGOWL')
         _cluster_evaluations(y_true, y_hat_grab, 'GRAB')
-
