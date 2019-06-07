@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.covariance import GraphicalLasso
 from sklearn.metrics import f1_score
 
-from src.data.synthetic_data import generate_theta_star_gowl, standardize, Block
+from src.data.make_synthetic_data import generate_theta_star_gowl, standardize, Block
 from src.evaluation.cluster_metrics import spectral_clustering
 from src.evaluation.fit_metrics import error_norm
 from src.models.gowl import GOWLModel

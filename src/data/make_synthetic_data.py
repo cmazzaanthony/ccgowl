@@ -3,11 +3,6 @@ from sklearn.datasets import make_spd_matrix, make_sparse_spd_matrix
 from statsmodels.stats.correlation_tools import cov_nearest
 
 
-def standardize(X):
-    ret = (X - X.mean(axis=0)) / np.std(X, axis=0, ddof=1)
-    return ret
-
-
 class Block:
 
     def __init__(self, dim, idx, block_min_size=None, block_max_size=None, block_value=None):
@@ -37,6 +32,11 @@ class Block:
         return (f"Block Index: {self.idx} \n"
                 f"Block Size: {self.block_size} \n"
                 f"Block Value: {round(self.block_value, 5)} \n")
+
+
+def standardize(X):
+    ret = (X - X.mean(axis=0)) / np.std(X, axis=0, ddof=1)
+    return ret
 
 
 def get_sample_cov(X):
