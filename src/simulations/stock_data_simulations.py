@@ -1,6 +1,4 @@
-import operator
 import pathlib
-from collections import Counter
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -13,7 +11,7 @@ from src.data.make_synthetic_data import standardize
 from src.evaluation.cluster_metrics import spectral_clustering
 from src.models.ccgowl import CCGOWLModel
 from src.simulations.simulation import Simulation
-from src.simulations.utils import convert_to_df_with_labels, pairs_in_clusters, compute_true_group
+from src.simulations.utils import convert_to_df_with_labels, pairs_in_clusters, compute_true_group, normalize_dfs
 from src.visualization.curved_edges import curved_edges
 
 
@@ -58,8 +56,8 @@ class StockData(Simulation):
         theta_mat_clusters[np.tril_indices(self.p, -1)] = theta_clusters
         clusters_df = convert_to_df_with_labels(self.info, theta_mat_clusters.copy())
 
-        y_true_clusters_df = self._normalize_dfs(y_true_clusters_df)
-        clusters_df = self._normalize_dfs(clusters_df)
+        y_true_clusters_df = normalize_dfs(y_true_clusters_df, self.info, self.p)
+        clusters_df = normalize_dfs(clusters_df, self.info, self.p)
 
         self.true_groups = pairs_in_clusters(y_true_clusters_df, K)
         self.predicted_groups = pairs_in_clusters(clusters_df, K)
@@ -125,29 +123,6 @@ class StockData(Simulation):
         nx.draw_networkx_nodes(G, pos, node_size=800, alpha=0.9, node_color=list(carac['myvalue']))
         plt.tick_params(axis='both', which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
         plt.show()
-
-    def _normalize_dfs(self, true_df):
-        """
-        Assigns lowest label value to lowest number of entries in each cluster.
-        :param true_df:
-        :param p:
-        :param labels:
-        :return:
-        """
-        lowtg = true_df.values[np.tril_indices(self.p, -1)].tolist()
-        dict_counts = dict(Counter(lowtg))
-        sorted_x = dict(sorted(dict_counts.items(), key=operator.itemgetter(1)))
-        lowtg_index = dict()
-        for idx, val in enumerate(sorted_x.keys()):
-            lowtg_index[idx] = [i for i, e in enumerate(lowtg) if e == val]
-
-        for i, val in lowtg_index.items():
-            for j in val:
-                lowtg[j] = i
-
-        mat_clusters = np.zeros((self.p, self.p))
-        mat_clusters[np.tril_indices(self.p, -1)] = lowtg
-        return convert_to_df_with_labels(self.info, mat_clusters.copy())
 
 
 if __name__ == '__main__':
