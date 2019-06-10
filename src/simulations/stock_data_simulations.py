@@ -28,7 +28,7 @@ def read_stock_data():
     sectors = info['V2']
     data.columns = [f'{comp}/{gic}' for comp, gic in zip(stock_names, sectors)]
 
-    return data, data.columns.to_list()
+    return data, data.columns
 
 
 class StockData(Simulation):

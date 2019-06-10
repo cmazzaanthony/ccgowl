@@ -1,8 +1,8 @@
+import numpy as np
+
 from src.models.functions.mse import MSE
 from src.models.functions.owl import OWL
 from src.models.model import Model
-import numpy as np
-
 from src.models.utils import oscar_weights
 
 

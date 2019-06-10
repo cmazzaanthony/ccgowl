@@ -3,6 +3,12 @@ from sklearn import cluster
 from src.models.grab import GRAB
 
 
+#####################################
+# ALL CODE TAKEN FROM HERE:
+# https://github.com/mjhosseini/grab
+#####################################
+
+
 def my_spectral_clustering(S, K):
     S2 = np.abs(S)
 
