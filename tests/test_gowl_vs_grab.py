@@ -8,7 +8,6 @@ from src.data.make_synthetic_data import generate_theta_star_gowl, standardize, 
 from src.evaluation.cluster_metrics import spectral_clustering
 from src.evaluation.fit_metrics import error_norm
 from src.models.gowl import GOWLModel
-from src.models.utils import oscar_weights
 from src.visualization.visualize import plot_multiple_theta_matrices_2d
 
 
@@ -71,7 +70,7 @@ class TestGRABEstimator(unittest.TestCase):
 
         print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_gowl)))
         plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_gowl],
-                                        ['Sample Covariance', f"Blocks: {len(blocks)}", 'True Theta', 'GRAB', 'GOWL'])
+                                        ['Sample Covariance', f"1 Block of Size 2", 'True Theta', 'GRAB', 'GOWL'])
 
         _fit_evaluations(theta_star, theta_grab, 1, 'GRAB')
         _fit_evaluations(theta_star, theta_gowl, 1, 'GOWL')
