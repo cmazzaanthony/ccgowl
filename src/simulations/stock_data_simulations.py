@@ -8,41 +8,13 @@ import numpy as np
 import pandas as pd
 from fa2 import ForceAtlas2
 from matplotlib.collections import LineCollection
-from sklearn import preprocessing
 
 from src.data.make_synthetic_data import standardize
 from src.evaluation.cluster_metrics import spectral_clustering
 from src.models.ccgowl import CCGOWLModel
 from src.simulations.simulation import Simulation
+from src.simulations.utils import convert_to_df_with_labels, pairs_in_clusters, compute_true_group
 from src.visualization.curved_edges import curved_edges
-
-
-def convert_to_df_with_labels(labels, theta):
-    df = pd.DataFrame(theta)
-    df.index = labels
-    df.columns = labels
-
-    return df
-
-
-def pairs_in_clusters(clusters_df, K):
-    cluster_values = np.arange(K, dtype=float)
-    rows = list()
-    for val in cluster_values:
-        pairs = np.where(clusters_df == val)
-        for i, j in zip(pairs[0], pairs[1]):
-            if j >= i:
-                continue
-
-            rows.append([
-                val,
-                clusters_df.index[i],
-                clusters_df.columns[j],
-            ])
-
-    df = pd.DataFrame(rows)
-    df.columns = ['Group', 'I', 'J']
-    return df
 
 
 def read_stock_data():
@@ -77,7 +49,7 @@ class StockData(Simulation):
         self.model.fit()
         theta_hat = self.model.theta_hat
 
-        y_true_clusters_df = self._compute_true_group(theta_hat)
+        y_true_clusters_df = compute_true_group(theta_hat, self.info)
         K = len(np.unique(y_true_clusters_df.values[np.tril_indices(self.p, -1)].tolist()))
 
         theta_clusters = spectral_clustering(theta=theta_hat, K=K)
@@ -109,7 +81,6 @@ class StockData(Simulation):
         df_true = df_pred.loc[(df_true['I'] != df_true['J']) & (df_true['Group'] != 10)]
         df_true.drop_duplicates(['I', 'J'], inplace=True)
 
-        ######## Graph using estimates
         G = nx.from_pandas_edgelist(df_filtered, 'I', 'J', create_using=nx.Graph())
 
         unique_sectors_in_cluster = list(np.unique(list(df_true['I']) + list(df_true['J'])))
@@ -154,33 +125,6 @@ class StockData(Simulation):
         nx.draw_networkx_nodes(G, pos, node_size=800, alpha=0.9, node_color=list(carac['myvalue']))
         plt.tick_params(axis='both', which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
         plt.show()
-
-    def _compute_true_group(self, theta):
-        df = convert_to_df_with_labels(self.info, theta.copy())
-        gics = [label.split('/')[1] for label in np.unique(df.columns)]
-        le = preprocessing.LabelEncoder()
-        le.fit(gics)
-        gic_to_label = dict(zip(gics, le.transform(gics)))
-        gic_to_label['no_cluster'] = len(gic_to_label)
-
-        i = 0
-        for index, row in df.iterrows():
-            j = 0
-            for k in row.keys():
-                if j >= i:
-                    continue
-
-                if k.split('/')[1] == index.split('/')[1]:
-                    row[k] = gic_to_label[k.split('/')[1]]
-                else:
-                    row[k] = np.nan
-
-                j += 1
-
-            i += 1
-
-        df = df.fillna(gic_to_label['no_cluster'])
-        return df
 
     def _normalize_dfs(self, true_df):
         """

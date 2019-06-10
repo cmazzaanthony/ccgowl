@@ -8,41 +8,13 @@ import numpy as np
 import pandas as pd
 from fa2 import ForceAtlas2
 from matplotlib.collections import LineCollection
-from sklearn import preprocessing
 
 from src.data.make_synthetic_data import standardize
 from src.evaluation.cluster_metrics import spectral_clustering
 from src.models.ccgowl import CCGOWLModel
 from src.simulations.simulation import Simulation
+from src.simulations.utils import convert_to_df_with_labels, compute_true_group, pairs_in_clusters
 from src.visualization.curved_edges import curved_edges
-
-
-def convert_to_df_with_labels(labels, theta):
-    df = pd.DataFrame(theta)
-    df.index = labels
-    df.columns = labels
-
-    return df
-
-
-def pairs_in_clusters(clusters_df, K):
-    cluster_values = np.arange(K - 1, dtype=float)
-    rows = list()
-    for val in cluster_values:
-        pairs = np.where(clusters_df == val)
-        for i, j in zip(pairs[0], pairs[1]):
-            if j >= i:
-                continue
-
-            rows.append([
-                val,
-                clusters_df.index[i],
-                clusters_df.columns[j],
-            ])
-
-    df = pd.DataFrame(rows)
-    df.columns = ['Group', 'I', 'J']
-    return df
 
 
 def load_gene_subset():
@@ -82,7 +54,7 @@ class GeneExpressionData(Simulation):
         self.model.fit()
         theta_hat = self.model.theta_hat
 
-        y_true_clusters_df = self._compute_true_group(theta_hat)
+        y_true_clusters_df = compute_true_group(theta_hat, list(self.info.values()))
         K = len(np.unique(y_true_clusters_df.values[np.tril_indices(self.p, -1)].tolist()))
 
         theta_clusters = spectral_clustering(theta=theta_hat, K=K)
@@ -94,8 +66,8 @@ class GeneExpressionData(Simulation):
         y_true_clusters_df = self._normalize_dfs(y_true_clusters_df)
         clusters_df = self._normalize_dfs(clusters_df)
 
-        self.true_groups = pairs_in_clusters(y_true_clusters_df, K)
-        self.predicted_groups = pairs_in_clusters(clusters_df, K)
+        self.true_groups = pairs_in_clusters(y_true_clusters_df, K - 1)
+        self.predicted_groups = pairs_in_clusters(clusters_df, K - 1)
 
     def plot_results(self):
         df_true = self.true_groups
@@ -111,7 +83,6 @@ class GeneExpressionData(Simulation):
         df_true = df_pred.loc[(df_true['I'] != df_true['J'])]
         df_true.drop_duplicates(['I', 'J'], inplace=True)
 
-        ######## Graph using estimates
         G = nx.from_pandas_edgelist(df_filtered, 'I', 'J', create_using=nx.Graph())
 
         unique_sectors_in_cluster = list(np.unique(list(df_true['I']) + list(df_true['J'])))
@@ -183,33 +154,6 @@ class GeneExpressionData(Simulation):
         df = pd.DataFrame(mat_clusters)
         df.index = list(self.info.values())
         df.columns = list(self.info.values())
-        return df
-
-    def _compute_true_group(self, theta):
-        df = convert_to_df_with_labels(list(self.info.values()), theta.copy())
-        gics = [label.split('/')[1] for label in np.unique(df.columns)]
-        le = preprocessing.LabelEncoder()
-        le.fit(gics)
-        gic_to_label = dict(zip(gics, le.transform(gics)))
-        gic_to_label['no_cluster'] = len(gic_to_label)
-
-        i = 0
-        for index, row in df.iterrows():
-            j = 0
-            for k in row.keys():
-                if j >= i:
-                    continue
-
-                if k.split('/')[1] == index.split('/')[1]:
-                    row[k] = gic_to_label[k.split('/')[1]]
-                else:
-                    row[k] = np.nan
-
-                j += 1
-
-            i += 1
-
-        df = df.fillna(gic_to_label['no_cluster'])
         return df
 
 
