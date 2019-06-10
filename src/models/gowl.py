@@ -23,7 +23,6 @@ class GOWLModel(Model):
     def __init__(self,
                  x,
                  sample_cov,
-                 theta0,
                  lam1,
                  lam2,
                  ss_type,
@@ -35,7 +34,7 @@ class GOWLModel(Model):
         self.S = sample_cov
         self.nsfunc = GOWL()
         self.sfunc = LOGDET()
-        self.theta0 = theta0
+        self.theta0 = np.linalg.inv(sample_cov)
         self._lambdas = oscar_weights(lam1, lam2, (p ** 2 - p) / 2)
         self.dual_gap = dual_gap
         self.max_iters = max_iters
@@ -51,8 +50,7 @@ class GOWLModel(Model):
         return self.sfunc.eval(theta, S) + self.nsfunc.eval(theta, rho)
 
     def _quad_approx(self, theta_k1, theta_k, S, t_k):
-        return -np.log(np.linalg.det(theta_k)) + \
-               np.trace(S @ theta_k) + \
+        return self.sfunc.eval(theta_k, S) + \
                np.trace((theta_k1 - theta_k) @ (S - np.linalg.inv(theta_k))) + \
                (1 / (2 * t_k)) * np.linalg.norm((theta_k1 - theta_k), ord='fro') ** 2
 
