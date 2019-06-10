@@ -106,7 +106,6 @@ class StockData(Simulation):
         df_filtered = df_pred.loc[(df_pred['I'] != df_pred['J']) & (df_pred['Group'] != 10)]
         df_filtered.drop_duplicates(['I', 'J'], inplace=True)
 
-        ####### Colors
         df_true = df_pred.loc[(df_true['I'] != df_true['J']) & (df_true['Group'] != 10)]
         df_true.drop_duplicates(['I', 'J'], inplace=True)
 
