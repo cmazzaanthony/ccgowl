@@ -9,11 +9,11 @@ def plot_multiple_theta_matrices_2d(thetas, titles):
     mask[np.triu_indices_from(mask)] = True
 
     n = len(thetas)
-    assert n <= 6
+    assert n <= 4
 
-    f, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(11, 9), dpi=150)
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(11, 9), dpi=150)
     f.tight_layout()
-    axarr = [ax1, ax2, ax3, ax4, ax5, ax6]
+    axarr = [ax1, ax2, ax3, ax4]
     for i in range(n):
         ax = axarr[i]
         ax.get_xaxis().set_ticks([])

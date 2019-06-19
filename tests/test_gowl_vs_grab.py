@@ -69,8 +69,8 @@ class TestGRABEstimator(unittest.TestCase):
         theta_gowl = model.theta_hat
 
         print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_gowl)))
-        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_gowl],
-                                        ['Sample Covariance', f"1 Block of Size 2", 'True Theta', 'GRAB', 'GOWL'])
+        plot_multiple_theta_matrices_2d([theta_blocks, theta_star, theta_grab, theta_gowl],
+                                        [f"1 Block of Size 2", 'True Theta', 'GRAB', 'GOWL'])
 
         _fit_evaluations(theta_star, theta_grab, 1, 'GRAB')
         _fit_evaluations(theta_star, theta_gowl, 1, 'GOWL')
