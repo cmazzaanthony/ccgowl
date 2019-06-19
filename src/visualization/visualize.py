@@ -3,18 +3,6 @@ import numpy as np
 import seaborn as sns
 
 
-def plot_single_theta_matrix(df, title):
-    mask = np.zeros_like(df.values, dtype=np.bool)
-    mask[np.triu_indices_from(mask)] = True
-
-    f, ax = plt.subplots(figsize=(11, 9))
-    ax.set_title(title)
-
-    cmap = sns.diverging_palette(220, 10, as_cmap=True)
-    sns.heatmap(df, cmap=cmap, mask=mask, ax=ax, vmax=df.values.max(), center=0)
-    plt.show()
-
-
 def plot_multiple_theta_matrices_2d(thetas, titles):
     # Generate a mask for the upper triangle
     mask = np.zeros_like(thetas[0], dtype=np.bool)

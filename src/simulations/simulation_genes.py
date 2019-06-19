@@ -71,9 +71,20 @@ class GeneExpressionData(Simulation):
         df_true = self.true_groups
         df_pred = self.predicted_groups
 
-        carac_dict = dict(zip(['Signal Transduction', 'Immune System', 'Cell Cycle', 'Metabolism',
-                               'Gene Expression', 'Uncategorized', 'No Group'],
-                              ['red', 'blue', 'gray', 'yellow', 'black', 'skyblue', 'orange']))
+        carac_dict = dict(zip(
+            [
+                'Signal Transduction', 'Immune System',
+                'Cell Cycle', 'Metabolism',
+                'Gene Expression', 'Uncategorized',
+                'No Group'
+            ],
+            [
+                'red', 'blue',
+                'gray', 'yellow',
+                'black', 'skyblue',
+                'orange'
+            ]
+        ))
 
         df_filtered = df_pred.loc[(df_pred['I'] != df_pred['J'])]
         df_filtered.drop_duplicates(['I', 'J'], inplace=True)
@@ -86,7 +97,10 @@ class GeneExpressionData(Simulation):
         unique_sectors_in_cluster = list(np.unique(list(df_true['I']) + list(df_true['J'])))
         carac = pd.DataFrame({
             'ID': unique_sectors_in_cluster,
-            'myvalue': [carac_dict[entry.split('/')[1]] for entry in unique_sectors_in_cluster],
+            'myvalue': [
+                carac_dict[entry.split('/')[1]]
+                for entry in unique_sectors_in_cluster
+            ],
         })
 
         carac = carac.set_index('ID')
