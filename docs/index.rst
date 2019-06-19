@@ -9,10 +9,10 @@ ccgowl documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
 
-   getting-started
-   commands
+   intro.rst
+   CCGOWL.ipynb
+   GOWL.ipynb
 
 
 
