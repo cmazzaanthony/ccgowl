@@ -52,7 +52,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Simple Example\n",
+    "## Synthetic Data Example\n",
     "\n",
     "We design our first example for a very low $p$ and specify one group of size two. As is custom in the literature we also standardize our design matrix $X$."
    ]

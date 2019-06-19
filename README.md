@@ -1,7 +1,8 @@
 Learning Gaussian Graphical Models with Ordered Weighted L1 Regularization
 ==============================
 
-Code for paper located [here](https://cmazzaanthony.github.io/files/1906.02719.pdf).
+* Code for paper located [here](https://cmazzaanthony.github.io/files/1906.02719.pdf).
+* [Documentation](https://cmazzaanthony.github.io/ccgowl/)
 
 Project Organization
 ------------
