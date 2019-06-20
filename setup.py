@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='src',
+    name='ccgowl',
     packages=find_packages(),
     version='0.1.0',
     description='ccgowl is a free software package for structure based on the Python programming language. '
