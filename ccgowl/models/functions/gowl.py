@@ -1,7 +1,7 @@
 import numpy as np
 
-from src.models.functions.function import Function
-from src.models.functions.owl import OWL
+from ccgowl.models.functions.function import Function
+from ccgowl.models.functions.owl import OWL
 
 
 def _get_off_diagonal_entries(x):

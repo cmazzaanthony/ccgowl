@@ -3,12 +3,12 @@ import unittest
 import numpy as np
 from sklearn.metrics import f1_score
 
-import src.models.grab.GRAB as grab
-from src.data.make_synthetic_data import generate_theta_star_gowl, standardize, generate_synthetic_data
-from src.evaluation.cluster_metrics import spectral_clustering
-from src.evaluation.fit_metrics import error_norm
-from src.models.ccgowl import CCGOWLModel
-from src.visualization.visualize import plot_multiple_theta_matrices_2d
+import ccgowl.models.grab.GRAB as grab
+from ccgowl.data.make_synthetic_data import generate_theta_star_gowl, standardize, generate_synthetic_data
+from ccgowl.evaluation.cluster_metrics import spectral_clustering
+from ccgowl.evaluation.fit_metrics import error_norm
+from ccgowl.models.ccgowl import CCGOWLModel
+from ccgowl.visualization.visualize import plot_multiple_theta_matrices_2d
 
 
 def _fit_evaluations(true_theta, theta_hat, clusters, estimator_name):

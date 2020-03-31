@@ -7,12 +7,12 @@ import pandas as pd
 from fa2 import ForceAtlas2
 from matplotlib.collections import LineCollection
 
-from src.data.make_synthetic_data import standardize
-from src.evaluation.cluster_metrics import spectral_clustering
-from src.models.ccgowl import CCGOWLModel
-from src.simulations.simulation import Simulation
-from src.simulations.utils import convert_to_df_with_labels, pairs_in_clusters, compute_true_group, normalize_dfs
-from src.visualization.curved_edges import curved_edges
+from ccgowl.data.make_synthetic_data import standardize
+from ccgowl.evaluation.cluster_metrics import spectral_clustering
+from ccgowl.models.ccgowl import CCGOWLModel
+from ccgowl.simulations.simulation import Simulation
+from ccgowl.simulations.utils import convert_to_df_with_labels, pairs_in_clusters, compute_true_group, normalize_dfs
+from ccgowl.visualization.curved_edges import curved_edges
 
 
 def read_stock_data():

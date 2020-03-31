@@ -1,4 +1,4 @@
-from src.models.functions.function import Function
+from ccgowl.models.functions.function import Function
 
 
 class MSE(Function):

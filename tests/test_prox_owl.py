@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from src.models.functions.gowl import GOWL
+from ccgowl.models.functions.gowl import GOWL
 
 
 class TestProxOWL(unittest.TestCase):

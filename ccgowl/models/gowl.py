@@ -2,10 +2,10 @@ import numpy as np
 from sklearn.datasets import make_sparse_spd_matrix
 from statsmodels.stats.correlation_tools import cov_nearest
 
-from src.models.functions.gowl import GOWL
-from src.models.functions.logdet import LOGDET
-from src.models.model import Model
-from src.models.utils import oscar_weights
+from ccgowl.models.functions.gowl import GOWL
+from ccgowl.models.functions.logdet import LOGDET
+from ccgowl.models.model import Model
+from ccgowl.models.utils import oscar_weights
 
 
 def _is_pos_def(x):

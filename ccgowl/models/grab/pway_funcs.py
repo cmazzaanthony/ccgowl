@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn import cluster
-from src.models.grab import GRAB
+from ccgowl.models.grab import GRAB
 
 
 #####################################

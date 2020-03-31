@@ -1,8 +1,51 @@
-Learning Gaussian Graphical Models with Ordered Weighted L1 Regularization
-==============================
+# ccgowl: Gaussian Graphical Model library
 
-* Code for paper located [here](https://cmazzaanthony.github.io/files/1906.02719.pdf).
-* [Documentation](https://cmazzaanthony.github.io/ccgowl/)
+ccgowl is a Python library for estimating inverse covariance matrices when pre-existing structure exists between features.
+This code was used in the paper available [here](https://cmazzaanthony.github.io/files/1906.02719.pdf).
+
+## Documentation
+
+Sphinx Documentation is available [here](https://cmazzaanthony.github.io/ccgowl/).
+
+## Installation
+
+```bash
+git clone git@github.com:cmazzaanthony/ccgowl.git
+cd ccgowl
+pip install -e .
+```
+
+## Usage
+
+```python
+import numpy as np
+from ccgowl.models.ccgowl import CCGOWLModel
+
+from ccgowl.data.make_synthetic_data import generate_theta_star_gowl, standardize
+
+p = 10
+n = 100
+n_blocks = 1
+theta_star_eps, blocks, theta_star = generate_theta_star_gowl(p=p,
+                                                              alpha=0.5,
+                                                              noise=0.1,
+                                                              n_blocks=n_blocks,
+                                                              block_min_size=2,
+                                                              block_max_size=6)
+
+theta_star_eps = theta_star_eps[0]  # by default we generate 1 trial, but for simulations we generate many trials
+sigma = np.linalg.inv(theta_star_eps)
+n = 100
+X = np.random.multivariate_normal(np.zeros(p), sigma, n)
+X = standardize(X)  # Standardize data to have mean zero and unit variance.
+S = np.cov(X.T)
+
+lam1 = 0.05263158  # controls sparsity
+lam2 = 0.05263158  # encourages equality of coefficients
+
+model = CCGOWLModel(X, lam1, lam2)
+model.fit()
+```
 
 Project Organization
 ------------
@@ -33,7 +76,7 @@ Project Organization
     │                         generated with `pip freeze > requirements.txt`
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
+    ├── ccgowl             <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
     │   ├── data           <- Scripts to download or generate data
@@ -56,3 +99,12 @@ Project Organization
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)

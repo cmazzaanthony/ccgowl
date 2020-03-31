@@ -1,9 +1,9 @@
 import numpy as np
 
-from src.models.functions.mse import MSE
-from src.models.functions.owl import OWL
-from src.models.model import Model
-from src.models.utils import oscar_weights
+from ccgowl.models.functions.mse import MSE
+from ccgowl.models.functions.owl import OWL
+from ccgowl.models.model import Model
+from ccgowl.models.utils import oscar_weights
 
 
 class CCGOWLModel(Model):

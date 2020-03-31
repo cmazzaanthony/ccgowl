@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.isotonic import isotonic_regression
 
-from src.models.functions.function import Function
+from ccgowl.models.functions.function import Function
 
 
 class OWL(Function):
