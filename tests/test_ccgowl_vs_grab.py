@@ -1,5 +1,3 @@
-import unittest
-
 import numpy as np
 from sklearn.metrics import f1_score
 
@@ -8,6 +6,7 @@ from ccgowl.data.make_synthetic_data import generate_theta_star_gowl, standardiz
 from ccgowl.evaluation.cluster_metrics import spectral_clustering
 from ccgowl.evaluation.fit_metrics import error_norm
 from ccgowl.models.ccgowl import CCGOWLModel
+from ccgowl.models.gowl import GOWLModel
 from ccgowl.visualization.visualize import plot_multiple_theta_matrices_2d
 
 
@@ -24,65 +23,66 @@ def _cluster_evaluations(y_true, y_hat, estimator_name):
     print(f"{estimator_name} F1 Score: {f1_score(y_true, y_hat, average='macro')}")
 
 
-class TestCCGOWLvsGRABEstimator(unittest.TestCase):
+def test_ccgowl_vs_grab_1():
+    np.random.seed(680)
+    p = 10
+    n_blocks = 1
+    theta_star, blocks, theta_blocks = generate_theta_star_gowl(p=p,
+                                                                alpha=0.5,
+                                                                noise=0.1,
+                                                                n_blocks=n_blocks,
+                                                                block_min_size=2,
+                                                                block_max_size=6)
+    theta_star = theta_star[0]
+    sigma = np.linalg.inv(theta_star)
+    n = 100
+    X = np.random.multivariate_normal(np.zeros(p), sigma, n)
+    X = standardize(X)
+    S = np.cov(X.T)
 
-    def test_ccgowl_vs_grab_1(self):
-        np.random.seed(680)
-        p = 10
-        n_blocks = 1
-        theta_star, blocks, theta_blocks = generate_theta_star_gowl(p=p,
-                                                                    alpha=0.5,
-                                                                    noise=0.1,
-                                                                    n_blocks=n_blocks,
-                                                                    block_min_size=2,
-                                                                    block_max_size=6)
-        theta_star = theta_star[0]
-        sigma = np.linalg.inv(theta_star)
-        n = 100
-        X = np.random.multivariate_normal(np.zeros(p), sigma, n)
-        X = standardize(X)
-        S = np.cov(X.T)
+    lam1 = 0.05263158
+    lam2 = 0.05263158
 
-        lam1 = 0.05263158
-        lam2 = 0.05263158
+    model = GOWLModel(X, S, 0.01, 0.0001, 'backtracking', max_iters=100000)
+    model.fit()
+    theta_gowl = model.theta_hat
 
-        theta_owl = np.zeros((p, p))
-        model = CCGOWLModel(X, lam1, lam2)
-        model.fit()
-        theta_ccgowl = model.theta_hat
+    model = CCGOWLModel(X, lam1, lam2)
+    model.fit()
+    theta_ccgowl = model.theta_hat
 
-        lmbda = .2
-        K = 10
-        o_size = .3  # The size of overlap, as an input parameter
-        max_iter = 20
-        tol = 1e-4
-        dual_max_iter = 600
-        dual_tol = 1e-4
-        theta_grab, blocks = grab.BCD(S,
-                                      lmbda=lmbda,
-                                      K=K,
-                                      o_size=o_size,
-                                      max_iter=max_iter,
-                                      tol=tol,
-                                      dual_max_iter=dual_max_iter,
-                                      dual_tol=dual_tol)
+    lmbda = .2
+    K = 10
+    o_size = .3  # The size of overlap, as an input parameter
+    max_iter = 20
+    tol = 1e-4
+    dual_max_iter = 600
+    dual_tol = 1e-4
+    theta_grab, blocks = grab.BCD(S,
+                                  lmbda=lmbda,
+                                  K=K,
+                                  o_size=o_size,
+                                  max_iter=max_iter,
+                                  tol=tol,
+                                  dual_max_iter=dual_max_iter,
+                                  dual_tol=dual_tol)
 
-        theta_grab = np.asarray(theta_grab)
+    theta_grab = np.asarray(theta_grab)
 
-        print('Non zero entries in precision matrix {}'.format(np.count_nonzero(theta_owl)))
-        plot_multiple_theta_matrices_2d([S, theta_blocks, theta_star, theta_grab, theta_ccgowl],
-                                        ['Sample Covariance', f"Blocks: {len(blocks)}", 'True Theta', 'GRAB', 'CCGOWL'])
+    plot_multiple_theta_matrices_2d([theta_star, theta_grab, theta_gowl, theta_ccgowl],
+                                    ['True Theta', 'GRAB', 'GOWL', 'CCGOWL'])
 
-        _fit_evaluations(theta_star, theta_grab, 1, 'GRAB')
-        _fit_evaluations(theta_star, theta_owl, 1, 'GOWL')
+    _fit_evaluations(theta_star, theta_grab, 1, 'GRAB')
+    _fit_evaluations(theta_star, theta_ccgowl, 1, 'CCGOWL')
 
-        y_hat_gowl = spectral_clustering(theta=theta_owl, K=2)
-        y_hat_grab = spectral_clustering(theta=theta_grab, K=2)
-        y_true = spectral_clustering(theta=theta_blocks, K=2).flatten()
-        _cluster_evaluations(y_true, y_hat_gowl, 'CCGOWL')
-        _cluster_evaluations(y_true, y_hat_grab, 'GRAB')
+    y_hat_gowl = spectral_clustering(theta=theta_ccgowl, K=2)
+    y_hat_grab = spectral_clustering(theta=theta_grab, K=2)
+    y_true = spectral_clustering(theta=theta_blocks, K=2).flatten()
+    _cluster_evaluations(y_true, y_hat_gowl, 'CCGOWL')
+    _cluster_evaluations(y_true, y_hat_grab, 'GRAB')
 
-    def test_ccgowl_vs_grab_2(self):
+
+def test_ccgowl_vs_grab_2():
         np.random.seed(680)
         p = 50
         block_percentage = 0.1
@@ -137,3 +137,7 @@ class TestCCGOWLvsGRABEstimator(unittest.TestCase):
         y_true = spectral_clustering(theta=theta_blocks, K=2).flatten()
         _cluster_evaluations(y_true, y_hat_gowl, 'CCGOWL')
         _cluster_evaluations(y_true, y_hat_grab, 'GRAB')
+
+
+if __name__ == "__main__":
+    test_ccgowl_vs_grab_1()

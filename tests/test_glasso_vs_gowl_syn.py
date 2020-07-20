@@ -51,7 +51,7 @@ class TestSyntheticData(unittest.TestCase):
 
         theta_0 = np.linalg.inv(S)
 
-        model = GOWLModel(X, S, theta_0, lam1, lam2, 'backtracking', max_iters=100000)
+        model = GOWLModel(X, S, lam1, lam2, 'backtracking', max_iters=100000)
         model.fit()
         theta_gowl = model.theta_hat
 
