@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 
@@ -41,8 +42,7 @@ def generate_blocks(n_blocks, p, min_size, max_size):
     return block_list
 
 
-def run(n, p, kappa):
-    method = 'ccgowl'
+def run(n, p, kappa, method):
     alpha = 0.5
     noise = 0.1
     K = int(p * kappa)
@@ -56,11 +56,24 @@ def run(n, p, kappa):
     theta_star = theta_star[0]
     sigma = np.linalg.inv(theta_star)
     kf = KFold(n_splits=2)
-    lambda_1 = np.linspace(0, 0.00001, 10)
-    lambda_2 = np.linspace(0, 0.00001, 10)
+    lambda_1 = np.linspace(0, 0.1, 10)
+    lambda_2 = np.linspace(0, 0.1, 10)
     X = np.random.multivariate_normal(np.zeros(p), sigma, n)
     X = standardize(X)
 
+    if method == 'grab':
+        result = run_experiment(
+            K,
+            0.0,
+            0.0,
+            X,
+            theta_star,
+            theta_blocks,
+            method
+        )
+        print(result)
+
+    df_list = list()
     for lam1, lam2 in list(itertools.product(lambda_1, lambda_2)):
         results = list()
         for train_index, test_index in kf.split(X):
@@ -74,7 +87,23 @@ def run(n, p, kappa):
                 theta_blocks,
                 method
             )
-            results.append(result)
+            results.append(result['F1'])
+
+        df_list.append([lam1, lam2, np.average(results)])
+
+    df = pd.DataFrame(df_list, columns=['lam1', 'lam2', 'error'])
+    df.sort_values(by='error', ascending=False, inplace=True)
+    selected_params = df.head(1).to_dict(orient="records")[0]
+    result = run_experiment(
+        K,
+        selected_params['lam1'],
+        selected_params['lam2'],
+        X,
+        theta_star,
+        theta_blocks,
+        method
+    )
+    print(result)
 
 
 def run_experiment(K, lam1, lam2, X, theta_star, theta_blocks, method):
@@ -123,4 +152,4 @@ if __name__ == '__main__':
     n = 1000
     p = 20
     kappa = 0.2
-    run(n, p, kappa)
+    run(n, p, kappa, 'grab')
