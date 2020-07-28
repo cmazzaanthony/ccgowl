@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, confusion_matrix
+
 from sklearn.model_selection import KFold
 
 import ccgowl.models.grab.GRAB as grab
@@ -21,7 +22,13 @@ def _fit_evaluations(true_theta, theta_hat):
 
 
 def _cluster_evaluations(y_true, y_hat):
-    return f1_score(y_true, y_hat, average='macro')
+    cm = confusion_matrix(y_true, y_hat)
+    if len(cm) == 1:
+        return 1,1,1
+    sensitivity = cm[0,0]/(cm[0,0]+cm[0,1])
+    specificity = cm[1,1]/(cm[1,0]+cm[1,1])
+    
+    return f1_score(y_true, y_hat, average='macro'), sensitivity, specificity
 
 
 def generate_blocks(n_blocks, p, min_size, max_size):
@@ -140,16 +147,29 @@ def run_experiment(K, lam1, lam2, X, theta_star, theta_blocks, method):
     theta_fit = _fit_evaluations(theta_star, theta_hat)
     y_hat_theta = spectral_clustering(theta=theta_hat, K=K)
     y_true = spectral_clustering(theta=theta_blocks, K=K).flatten()
-    f1 = _cluster_evaluations(y_true, y_hat_theta)
+    f1, sensitivity, specificity = _cluster_evaluations(y_true, y_hat_theta)
 
     return {
         'Fit': theta_fit,
-        'F1': f1
+        'F1': f1,
+        'sensitivity':sensitivity,
+        'specificity': specificity
     }
 
 
 if __name__ == '__main__':
-    n = 1000
-    p = 20
-    kappa = 0.2
-    run(n, p, kappa, 'grab')
+    # p = 25
+    # kappa = 0.1
+    # n = 2000
+
+    df = []
+    for method in ['grab']:
+        for p in [15,25]:
+            for kappa in [0.1,0.2]:
+                for n in [1000,2000]:
+                    print('here')
+                    d = run(n, p, kappa, method)
+                    df.append( { 'p':p, '\kappa':kappa, 'n':n, 'method':method, uppercase(method)+'$/F_1$':d['F1'],uppercase(method)+'/sensitivity':d['sensitivity'], uppercase(method)+'specificity':d['specificity']} )
+
+    df = pd.DataFrame(df)
+    print(df)

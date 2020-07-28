@@ -1,6 +1,7 @@
 import rpy2.robjects as ro
 import rpy2.robjects.numpy2ri
 from pandas import *
+import numpy as np
 
 rpy2.robjects.numpy2ri.activate()
 
