@@ -25,8 +25,9 @@ def _cluster_evaluations(y_true, y_hat):
     cm = confusion_matrix(y_true, y_hat)
     if len(cm) == 1:
         return 1,1,1
-    sensitivity = cm[0,0]/(cm[0,0]+cm[0,1])
-    specificity = cm[1,1]/(cm[1,0]+cm[1,1])
+
+    sensitivity = 0 if np.sum(cm[0,0]+cm[0,1]) == 0 else cm[0,0]/(cm[0,0]+cm[0,1])
+    specificity = 0 if np.sum(cm[1,0]+cm[1,1]) == 0 else cm[1,1]/(cm[1,0]+cm[1,1])
     
     return f1_score(y_true, y_hat, average='macro'), sensitivity, specificity
 
@@ -163,13 +164,15 @@ if __name__ == '__main__':
     # n = 2000
 
     df = []
-    for method in ['grab']:
-        for p in [15,25]:
-            for kappa in [0.1,0.2]:
+    for method in ['grab','gowl','ccgowl']:
+        for p in [50]:
+            for kappa in [0.2,0.3]:
                 for n in [1000,2000]:
-                    print('here')
                     d = run(n, p, kappa, method)
-                    df.append( { 'p':p, '\kappa':kappa, 'n':n, 'method':method, method.upper()+'$/F_1$':d['F1'],method.upper()+'/sensitivity':d['sensitivity'], method.upper()+'specificity':d['specificity']} )
+                    df.append( { 'p':p, '$\kappa$':kappa, 'n':n, 'method':method, method.upper()+'$/F_1$':d['F1'],method.upper()+'/MSE':d['Fit']['MSE'],method.upper()+'/sensitivity':d['sensitivity'], method.upper()+'/specificity':d['specificity']} )
 
     df = pd.DataFrame(df)
-    print(df)
+    df.iloc[:8,8:12] = df.iloc[8:16,8:12].to_numpy() # gowl
+    df.iloc[:8,12:16] = df.iloc[16:24,12:16].to_numpy() # ccgowl
+    df = df.head(8)
+    import ipdb;ipdb.set_trace()
