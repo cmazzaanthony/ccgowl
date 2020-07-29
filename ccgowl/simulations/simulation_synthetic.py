@@ -110,7 +110,7 @@ def run(n, p, kappa, method):
         theta_blocks,
         method
     )
-    print(result)
+    return result
 
 
 def run_experiment(K, lam1, lam2, X, theta_star, theta_blocks, method):
@@ -169,7 +169,7 @@ if __name__ == '__main__':
                 for n in [1000,2000]:
                     print('here')
                     d = run(n, p, kappa, method)
-                    df.append( { 'p':p, '\kappa':kappa, 'n':n, 'method':method, uppercase(method)+'$/F_1$':d['F1'],uppercase(method)+'/sensitivity':d['sensitivity'], uppercase(method)+'specificity':d['specificity']} )
+                    df.append( { 'p':p, '\kappa':kappa, 'n':n, 'method':method, method.upper()+'$/F_1$':d['F1'],method.upper()+'/sensitivity':d['sensitivity'], method.upper()+'specificity':d['specificity']} )
 
     df = pd.DataFrame(df)
     print(df)
