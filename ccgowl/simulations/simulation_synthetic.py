@@ -164,15 +164,16 @@ if __name__ == '__main__':
     # n = 2000
 
     df = []
-    for method in ['grab','gowl','ccgowl']:
-        for p in [50]:
-            for kappa in [0.2,0.3]:
-                for n in [1000,2000]:
-                    d = run(n, p, kappa, method)
-                    df.append( { 'p':p, '$\kappa$':kappa, 'n':n, 'method':method, method.upper()+'$/F_1$':d['F1'],method.upper()+'/MSE':d['Fit']['MSE'],method.upper()+'/sensitivity':d['sensitivity'], method.upper()+'/specificity':d['specificity']} )
+    for i in range(10):
+        for method in ['grab','gowl','ccgowl']:
+            for p in [15,25]:
+                for kappa in [0.1,0.3]:
+                    for n in [1000,2000]:
+                        d = run(n, p, kappa, method)
+                        df.append( { 'p':p, '$\kappa$':kappa, 'n':n, 'method':method, method.upper()+'$/F_1$':d['F1'],method.upper()+'/MSE':d['Fit']['MSE'],method.upper()+'/sensitivity':d['sensitivity'], method.upper()+'/specificity':d['specificity'],'seed':i} )
 
     df = pd.DataFrame(df)
-    df.iloc[:8,8:12] = df.iloc[8:16,8:12].to_numpy() # gowl
-    df.iloc[:8,12:16] = df.iloc[16:24,12:16].to_numpy() # ccgowl
-    df = df.head(8)
+    # df.iloc[:8,8:12] = df.iloc[8:16,8:12].to_numpy() # gowl
+    # df.iloc[:8,12:16] = df.iloc[16:24,12:16].to_numpy() # ccgowl
+    # df = df.head(8)
     import ipdb;ipdb.set_trace()
