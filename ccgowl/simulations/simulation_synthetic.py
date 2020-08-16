@@ -11,8 +11,10 @@ from ccgowl.evaluation.fit_metrics import error_norm
 from ccgowl.models.ccgowl import CCGOWLModel
 from ccgowl.models.gowl import GOWLModel
 import itertools
-from ccgowl.visualization.visualize import plot_multiple_theta_matrices_2d
 
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
 
 def _fit_evaluations(true_theta, theta_hat):
     return {
@@ -24,10 +26,10 @@ def _fit_evaluations(true_theta, theta_hat):
 def _cluster_evaluations(y_true, y_hat):
     cm = confusion_matrix(y_true, y_hat)
     if len(cm) == 1:
-        return 1,1,1
-    sensitivity = cm[0,0]/(cm[0,0]+cm[0,1])
-    specificity = cm[1,1]/(cm[1,0]+cm[1,1])
-    
+        return 1, 1, 1
+    sensitivity = cm[0, 0] / (cm[0, 0] + cm[0, 1])
+    specificity = cm[1, 1] / (cm[1, 0] + cm[1, 1])
+
     return f1_score(y_true, y_hat, average='macro'), sensitivity, specificity
 
 
@@ -152,24 +154,22 @@ def run_experiment(K, lam1, lam2, X, theta_star, theta_blocks, method):
     return {
         'Fit': theta_fit,
         'F1': f1,
-        'sensitivity':sensitivity,
+        'sensitivity': sensitivity,
         'specificity': specificity
     }
 
 
 if __name__ == '__main__':
-    # p = 25
-    # kappa = 0.1
-    # n = 2000
-
     df = []
-    for method in ['grab']:
-        for p in [15,25]:
-            for kappa in [0.1,0.2]:
-                for n in [1000,2000]:
+    for method in ['ccgowl']:
+        for p in [15, 25]:
+            for kappa in [0.1, 0.2]:
+                for n in [1000, 2000]:
                     print('here')
                     d = run(n, p, kappa, method)
-                    df.append( { 'p':p, '\kappa':kappa, 'n':n, 'method':method, method.upper()+'$/F_1$':d['F1'],method.upper()+'/sensitivity':d['sensitivity'], method.upper()+'specificity':d['specificity']} )
+                    df.append({'p': p, '\kappa': kappa, 'n': n, 'method': method, method.upper() + '$/F_1$': d['F1'],
+                               method.upper() + '/sensitivity': d['sensitivity'],
+                               method.upper() + '/specificity': d['specificity']})
 
     df = pd.DataFrame(df)
     print(df)
