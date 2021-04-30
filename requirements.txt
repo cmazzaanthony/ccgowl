@@ -75,7 +75,7 @@ sphinxcontrib-serializinghtml==1.1.3
 -e git+git@github.com:cmazzaanthony/ccgowl.git@b25d69ee8b2421319e178d6c12cd97641bee8299#egg=src
 statsmodels==0.9.0
 tqdm==4.32.1
-urllib3==1.25.3
+urllib3==1.25.8
 virtualenv==16.6.0
 wcwidth==0.1.7
 whichcraft==0.5.2
